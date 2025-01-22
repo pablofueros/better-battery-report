@@ -1,0 +1,32 @@
+[project]
+name = "bbrpy"
+version = "0.1.0"
+description = "Better Battery Report for Windows"
+readme = "README.md"
+authors = [
+    { name = "Pablo Garcia", email = "pablofueros@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.2.3",
+    "plotly>=5.24.1",
+    "polars>=1.20.0",
+    "pydantic-xml>=2.14.1",
+    "typer>=0.15.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "nbformat>=5.10.4",
+    "pyright>=1.1.392.post0",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+]
+
+[project.scripts]
+bbrpy = "bbrpy.cli:app"
