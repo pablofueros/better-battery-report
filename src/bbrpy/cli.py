@@ -7,8 +7,27 @@ import typer
 
 from .generator import generate_battery_report_xml
 from .models import BatteryReport
+from .version import __version__
 
 app = typer.Typer()
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"bbrpy version {__version__}\n")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        callback=version_callback,
+        help="Display the version and exit.",
+    ),
+):
+    pass
 
 
 @app.command()
