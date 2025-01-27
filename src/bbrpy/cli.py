@@ -23,6 +23,7 @@ def main(
     version: bool = typer.Option(
         None,
         "--version",
+        "-v",
         callback=version_callback,
         help="Display the version and exit.",
     ),
