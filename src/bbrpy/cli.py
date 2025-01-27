@@ -35,7 +35,7 @@ def info():
     """Display basic battery information from the latest report."""
 
     # Generate the battery report and extract the basic information
-    xml_report = generate_battery_report_xml(directory="./tmp/", delete=True)
+    xml_report = generate_battery_report_xml()
     battery_report = BatteryReport.from_xml(xml_report)
 
     # Extract the basic information
@@ -53,13 +53,12 @@ def info():
 
 @app.command()
 def generate(
-    directory: str = "./reports/",
-    filename: str = "battery_report.xml",
+    output: str = "./reports/battery_report.html",
 ):
     """Generate a battery report with capacity history visualization."""
 
     # Generate the battery report and extract the capacity history
-    xml_report = generate_battery_report_xml(directory, filename)
+    xml_report = generate_battery_report_xml()
     battery_report = BatteryReport.from_xml(xml_report)
     history_df = pl.DataFrame([entry.model_dump() for entry in battery_report.History])
 
@@ -73,13 +72,17 @@ def generate(
         template="plotly_dark",
     )
 
+    # Create the output directory if it does not exist
+    output_path = pathlib.Path(output).resolve()
+    directory = output_path.parent
+    directory.mkdir(parents=True, exist_ok=True)
+
     # Save the report to an HTML file
-    fig.write_html(f"{directory}/battery_capacity.html")
+    fig.write_html(output_path.with_suffix(".html"))
     typer.echo(f"Report generated successfully in {directory}")
 
     # Open the report in the default browser
-    filedir = pathlib.Path(directory, "battery_capacity.html").resolve()
-    webbrowser.open(f"file://{filedir}")
+    webbrowser.open(f"file://{output_path}")
 
 
 if __name__ == "__main__":

@@ -20,37 +20,27 @@ Examples:
     POWERCFG /BATTERYREPORT /OUTPUT "batteryreport.xml" /XML
     POWERCFG /BATTERYREPORT /TRANSFORMXML "batteryreport.xml"
     POWERCFG /BATTERYREPORT /TRANSFORMXML "batteryreport.xml" /OUTPUT "batteryreport.html"
+
+Note:
+    The /XML command line switch is not supported with /TRANSFORMXML.
+    The /DURATION command line switch is not supported with /TRANSFORMXML.
+
+Returns the content of the battery report XML file.
+The file is created in a temporary directory and deleted after reading.
 """
 
 import pathlib
 import subprocess
-from typing import Optional
+import tempfile
 
 
-def generate_battery_report_xml(
-    directory: str = "./reports/",
-    filename: str = "battery_report.xml",
-    duration: Optional[int] = None,
-    delete: bool = False,
-) -> str:
-    """Generate a battery report using powercfg command."""
-
-    # Create the directory if it does not exist
-    filepath = pathlib.Path(directory, filename)
-    filepath.parent.mkdir(exist_ok=True, parents=True)
-
-    # Generate the battery report
-    cmd = f"powercfg /batteryreport /output {filepath} /xml"
-    if duration is not None:
-        cmd += f" /duration {duration}"
-    subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
-
-    # Read the report file
-    report_xml = filepath.read_text("utf-8")
-
-    # Delete the file if requested
-    if delete:
-        filepath.unlink()
-        filepath.parent.rmdir()
-
-    return report_xml
+def generate_battery_report_xml() -> str:
+    """Returns the content of the battery report XML file."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Define the file path for the report file
+        filepath = pathlib.Path(temp_dir, "report.xml")
+        # Generate the battery report in XML format
+        cmd = f"powercfg /batteryreport /output {filepath} /xml"
+        subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
+        # Read and return the report content
+        return filepath.read_text("utf-8")
