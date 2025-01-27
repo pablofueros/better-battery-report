@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic_xml import BaseXmlModel, attr, element, wrapped
 
+from .generator import generate_battery_report_xml
+
 NSMAP = {"": "http://schemas.microsoft.com/battery/2012"}
 
 
@@ -109,3 +111,25 @@ class BatteryReport(BaseXmlModel, nsmap=NSMAP):
     RecentUsage: list[UsageEntry] = wrapped("RecentUsage", element("UsageEntry"))
     History: list[HistoryEntry] = wrapped("History", element("HistoryEntry"))
     EnergyDrains: list[Drain] = wrapped("EnergyDrains", element("Drain"))
+
+    @classmethod
+    def generate(cls) -> "BatteryReport":
+        """Generate a new battery report from the system."""
+        xml_report = generate_battery_report_xml()
+        return cls.from_xml(xml_report)
+
+    @property
+    def computer_name(self):
+        return self.SystemInformation.ComputerName
+
+    @property
+    def scan_time(self):
+        return self.ReportInformation.LocalScanTime
+
+    @property
+    def design_cap(self):
+        return self.RuntimeEstimates.DesignCapacity.Capacity
+
+    @property
+    def full_cap(self):
+        return self.RuntimeEstimates.FullChargeCapacity.Capacity

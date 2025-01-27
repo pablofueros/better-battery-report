@@ -5,7 +5,6 @@ import plotly.express as px
 import polars as pl
 import typer
 
-from .generator import generate_battery_report_xml
 from .models import BatteryReport
 from .version import __version__
 
@@ -34,22 +33,11 @@ def main(
 @app.command()
 def info():
     """Display basic battery information from the latest report."""
-
-    # Generate the battery report and extract the basic information
-    xml_report = generate_battery_report_xml()
-    battery_report = BatteryReport.from_xml(xml_report)
-
-    # Extract the basic information
-    computer_name = battery_report.SystemInformation.ComputerName
-    scan_time = battery_report.ReportInformation.LocalScanTime
-    design_cap = battery_report.RuntimeEstimates.DesignCapacity.Capacity
-    full_cap = battery_report.RuntimeEstimates.FullChargeCapacity.Capacity
-
-    # Display the basic information
-    typer.echo(f"Computer Name: {computer_name}")
-    typer.echo(f"Scan Time: {scan_time}")
-    typer.echo(f"Design Capacity: {design_cap} mWh")
-    typer.echo(f"Full Charge Capacity: {full_cap} mWh")
+    battery_report = BatteryReport.generate()
+    typer.echo(f"Computer Name: {battery_report.computer_name}")
+    typer.echo(f"Scan Time: {battery_report.scan_time}")
+    typer.echo(f"Design Capacity: {battery_report.design_cap} mWh")
+    typer.echo(f"Full Charge Capacity: {battery_report.full_cap} mWh")
 
 
 @app.command()
@@ -59,8 +47,7 @@ def generate(
     """Generate a battery report with capacity history visualization."""
 
     # Generate the battery report and extract the capacity history
-    xml_report = generate_battery_report_xml()
-    battery_report = BatteryReport.from_xml(xml_report)
+    battery_report = BatteryReport.generate()
     history_df = pl.DataFrame([entry.model_dump() for entry in battery_report.History])
 
     # Generate the capacity history visualization
@@ -80,7 +67,8 @@ def generate(
 
     # Save the report to an HTML file
     fig.write_html(output_path.with_suffix(".html"))
-    typer.echo(f"Report generated successfully in {directory}")
+    styled_dir = typer.style(str(directory), fg=typer.colors.BLUE)
+    typer.echo(f"Report generated successfully in {styled_dir}")
 
     # Open the report in the default browser
     webbrowser.open(f"file://{output_path}")
