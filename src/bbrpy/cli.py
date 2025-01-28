@@ -3,6 +3,7 @@ import webbrowser
 
 import plotly.express as px
 import polars as pl
+import rich
 import typer
 
 from .models import BatteryReport
@@ -34,10 +35,12 @@ def main(
 def info():
     """Display basic battery information from the latest report."""
     battery_report = BatteryReport.generate()
-    typer.echo(f"Computer Name: {battery_report.computer_name}")
-    typer.echo(f"Scan Time: {battery_report.scan_time}")
-    typer.echo(f"Design Capacity: {battery_report.design_cap} mWh")
-    typer.echo(f"Full Charge Capacity: {battery_report.full_cap} mWh")
+    rich.print(f":computer: Computer Name: [red]{battery_report.computer_name}[/red]")
+    rich.print(f":alarm_clock: Scan Time: [green]{battery_report.scan_time}[/green]")
+    rich.print(
+        f":battery: Capacity Status: "
+        f"{battery_report.full_cap}/{battery_report.design_cap} mWh"
+    )
 
 
 @app.command()
@@ -67,8 +70,7 @@ def generate(
 
     # Save the report to an HTML file
     fig.write_html(output_path.with_suffix(".html"))
-    styled_dir = typer.style(str(directory), fg=typer.colors.BLUE)
-    typer.echo(f"Report generated successfully in {styled_dir}")
+    rich.print(f"Report generated successfully in [blue]{directory}[/blue]")
 
     # Open the report in the default browser
     webbrowser.open(f"file://{output_path}")
