@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="BBRPY logo" width="600"/>
+<img src="https://raw.githubusercontent.com/pablofueros/better-battery-report/main/assets/banner.png" alt="BBRPY logo" width="600"/>
 
 ---
 
