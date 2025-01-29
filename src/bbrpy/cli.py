@@ -1,8 +1,8 @@
 import pathlib
 import webbrowser
 
+import pandas as pd
 import plotly.express as px
-import polars as pl
 import rich
 import typer
 
@@ -51,7 +51,7 @@ def generate(
 
     # Generate the battery report and extract the capacity history
     battery_report = BatteryReport.generate()
-    history_df = pl.DataFrame([entry.model_dump() for entry in battery_report.History])
+    history_df = pd.DataFrame([entry.model_dump() for entry in battery_report.History])
 
     # Generate the capacity history visualization
     fig = px.line(

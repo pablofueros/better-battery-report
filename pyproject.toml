@@ -10,7 +10,6 @@ requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2.3",
     "plotly>=5.24.1",
-    "polars>=1.20.0",
     "pydantic-xml>=2.14.1",
     "rich>=13.9.4",
     "typer>=0.15.1",
