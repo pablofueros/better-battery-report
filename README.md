@@ -1,21 +1,20 @@
 <div align="center">
 
-# ![BBRPY logo](assets/banner.png)
+<img src="assets/banner.png" alt="BBRPY logo" width="600"/>
 
 ---
 
-## **✨ Better Battery Report: A Python CLI tool that generates enhanced battery reports for Windows systems ✨**
+### **✨ Better Battery Report: A Python CLI tool that generates enhanced battery reports for Windows systems ✨**
 
 [![Code Quality](https://github.com/pablofueros/bbrpy/actions/workflows/code-quality.yaml/badge.svg)](https://github.com/pablofueros/bbrpy/actions/workflows/code-quality.yaml)
 [![Release](https://github.com/pablofueros/bbrpy/actions/workflows/release.yaml/badge.svg)](https://github.com/pablofueros/bbrpy/actions/workflows/release.yaml)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/bbrpy.svg)](https://pypi.org/project/bbrpy/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/bbrpy.svg?label=PyPI%20downloads)](
-https://pypi.org/project/bbrpy/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/bbrpy.svg?label=PyPI%20downloads)](https://pypi.org/project/bbrpy/)
 ![versions](https://img.shields.io/pypi/pyversions/bbrpy.svg)
 
-</div>
-
 ---
+
+</div>
 
 ## 📋 Features
 
