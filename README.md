@@ -26,22 +26,22 @@
 
 ## 📦 Installation
 
-Since this is a CLI application, it's recommended to run it using [uvx](https://docs.astral.sh/uv/guides/tools/):
+Since this is a CLI application, it's recommended to run it using [uvx](https://docs.astral.sh/uv/guides/tools/)
 
 ```bash
 uvx bbrpy
 ```
 
-Alternatively, you can install it using pip:
-
-```bash
-pip install bbrpy
-```
-
-Or [pipx](https://github.com/pypa/pipx) to install it on an isolated environment:
+or using [pipx](https://github.com/pypa/pipx) to install it on an isolated environment:
 
 ```bash
 pipx install bbrpy
+```
+
+Alternatively, you can install it globally using pip:
+
+```bash
+pip install bbrpy
 ```
 
 ## 💻 Usage
@@ -56,10 +56,8 @@ bbrpy info
 
 This command shows basic battery information including:
 
-- Computer name
-- Last scan time
-- Design capacity
-- Current full charge capacity
+- Report scan time
+- Capacity Status (current / design)
 
 ### Generate Battery Report
 
@@ -85,12 +83,11 @@ This command:
 
 ## ⚙️ Technical Details
 
-The tool uses:
-
 - `powercfg` Windows command-line tool for battery data
-- Plotly for interactive visualizations
-- Pandas for data processing
-- Typer for CLI interface
+- `pydantic_xml` for the default report serialization
+- `plotly` for interactive visualizations
+- `pandas` for data processing
+- `typer` for CLI interface
 
 ## ©️ License
 
