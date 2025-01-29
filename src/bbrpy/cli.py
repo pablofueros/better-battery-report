@@ -35,7 +35,6 @@ def main(
 def info():
     """Display basic battery information from the latest report."""
     battery_report = BatteryReport.generate()
-    rich.print(f":computer: Computer Name: [red]{battery_report.computer_name}[/red]")
     rich.print(f":alarm_clock: Scan Time: [green]{battery_report.scan_time}[/green]")
     rich.print(
         f":battery: Capacity Status: "
