@@ -144,3 +144,35 @@ jobs:
         run: gh release create ${{ env.TAG_NAME }} dist/* --title ${{ env.TAG_NAME }} --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
+
+  bump_version:
+    needs: [details, github_release, pypi_publish]
+    runs-on: ubuntu-latest
+    env:
+      NEW_VERSION: ${{ needs.details.outputs.new_version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history to avoid issues with tags and branches
+
+      - name: Set up Python
+        # Resolves Python Version from .python-version file if no python-version is provided
+        uses: actions/setup-python@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Bump version
+        run: |
+          NEW_VERSION=${{ env.NEW_VERSION }}
+          sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$NEW_VERSION\"/" $GITHUB_WORKSPACE/pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Bumping version to ${{ env.NEW_VERSION }}
+          file_pattern: "pyproject.toml"
+          skip_dirty_check: true
