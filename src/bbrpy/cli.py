@@ -33,12 +33,9 @@ def main(
 @app.command()
 def info():
     """Display basic battery information from the latest report."""
-    battery_report = BatteryReport.generate()
-    rich.print(f":alarm_clock: Scan Time: [green]{battery_report.scan_time}[/green]")
-    rich.print(
-        f":battery: Capacity Status: "
-        f"{battery_report.full_cap}/{battery_report.design_cap} mWh"
-    )
+    report = BatteryReport.generate()
+    rich.print(f":alarm_clock: Scan Time: [green]{report.scan_time}[/green]")
+    rich.print(f":battery: Capacity Status: {report.full_cap}/{report.design_cap} mWh")
 
 
 @app.command()
@@ -59,8 +56,8 @@ def report(
         raise typer.Exit(1)
 
     # Generate the battery report and extract the capacity history
-    battery_report = BatteryReport.generate()
-    history_df = pd.DataFrame([entry.model_dump() for entry in battery_report.History])
+    report = BatteryReport.generate()
+    history_df = pd.DataFrame([entry.model_dump() for entry in report.History])
 
     # Generate the capacity history visualization
     fig = px.line(
