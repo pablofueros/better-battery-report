@@ -3,6 +3,12 @@ name = "bbrpy"
 version = "0.2.6"
 description = "Better Battery Report for Windows"
 readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+    "License :: OSI Approved :: MIT License",
+]
 authors = [{ name = "Pablo Garcia", email = "pablofueros@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = ["pydantic-xml>=2.14.1", "rich>=13.9.4", "typer>=0.15.1"]
