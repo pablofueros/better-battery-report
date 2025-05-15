@@ -42,7 +42,7 @@ def info():
 
 
 @app.command()
-def generate(
+def report(
     output: str = "./reports/battery_report.html",
 ):
     """Generate a battery report with capacity history visualization."""
