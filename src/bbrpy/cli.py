@@ -1,10 +1,9 @@
 import pathlib
 import webbrowser
 
-import pandas as pd
-import plotly.express as px
 import rich
 import typer
+from rich.markup import escape
 
 from .models import BatteryReport
 from .version import __version__
@@ -47,6 +46,17 @@ def generate(
     output: str = "./reports/battery_report.html",
 ):
     """Generate a battery report with capacity history visualization."""
+
+    # Check if the required libraries are installed
+    try:
+        import pandas as pd
+        import plotly.express as px
+    except ImportError:
+        rich.print(
+            ":warning: [red]Error: Missing extra dependencies![/red]\n"
+            f"Please, use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command."
+        )
+        raise typer.Exit(1)
 
     # Generate the battery report and extract the capacity history
     battery_report = BatteryReport.generate()
