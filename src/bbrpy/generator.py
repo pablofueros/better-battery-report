@@ -1,4 +1,5 @@
-"""Module for generating battery reports using powercfg command. Details:
+"""
+Module for generating battery reports using powercfg command. Details:
 
 POWERCFG /BATTERYREPORT [/OUTPUT <FILENAME>] [/XML] [/TRANSFORMXML <FILENAME.XML>]
 
@@ -24,9 +25,6 @@ Examples:
 Note:
     The /XML command line switch is not supported with /TRANSFORMXML.
     The /DURATION command line switch is not supported with /TRANSFORMXML.
-
-Returns the content of the battery report XML file.
-The file is created in a temporary directory and deleted after reading.
 """
 
 import pathlib
@@ -35,12 +33,11 @@ import tempfile
 
 
 def generate_battery_report_xml() -> str:
-    """Returns the content of the battery report XML file."""
+    """Returns the content of the battery report XML file.
+    Note that the file is created in a temporary directory."""
+
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Define the file path for the report file
         filepath = pathlib.Path(temp_dir, "report.xml")
-        # Generate the battery report in XML format
         cmd = f"powercfg /batteryreport /output {filepath} /xml"
         subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
-        # Read and return the report content
         return filepath.read_text("utf-8")
