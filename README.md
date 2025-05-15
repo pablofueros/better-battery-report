@@ -10,7 +10,7 @@
 [![Release](https://github.com/pablofueros/bbrpy/actions/workflows/release.yaml/badge.svg)](https://github.com/pablofueros/bbrpy/actions/workflows/release.yaml)
 [![codecov](https://codecov.io/gh/pablofueros/better-battery-report/graph/badge.svg?token=YGVE6SADVQ)](https://codecov.io/gh/pablofueros/better-battery-report)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/bbrpy.svg)](https://pypi.org/project/bbrpy/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/bbrpy.svg?label=PyPI%20downloads)](https://pypi.org/project/bbrpy/)
+[![PyPI Downloads](https://static.pepy.tech/badge/bbrpy)](https://pypi.org/project/bbrpy/)
 ![versions](https://img.shields.io/pypi/pyversions/bbrpy.svg)
 
 ---
