@@ -50,8 +50,8 @@ def report(
         import plotly.express as px
     except ImportError:
         rich.print(
-            ":warning: [red]Error: Missing extra dependencies![/red]\n"
-            f"Please, use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command."
+            ":warning: [red] Error: Missing extra dependencies![/red]\n"
+            f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
         )
         raise typer.Exit(1)
 
