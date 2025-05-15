@@ -26,16 +26,19 @@
 
 ## 📦 Installation
 
-Since this is a CLI application, it's recommended to run it using [uvx](https://docs.astral.sh/uv/guides/tools/)
+Since this is a CLI application, it's recommended to run it using [uvx](https://docs.astral.sh/uv/guides/tools/):
 
 ```bash
 uvx bbrpy
 ```
 
-or using [pipx](https://github.com/pypa/pipx) to install it on an isolated environment:
+> [!IMPORTANT]
+> This will only install the essential dependencies for running the tool, making it lightweight and portable. For extended use, it may be necessary to install extra dependency groups as well.
+
+It can also be installed into a persistent environment and added to the PATH:
 
 ```bash
-pipx install bbrpy
+uv tool install bbrpy
 ```
 
 Alternatively, you can install it globally using pip:
@@ -62,7 +65,7 @@ This command shows basic battery information including:
 ### Generate Battery Report
 
 ```bash
-bbrpy generate [--output PATH]
+bbrpy report [--output PATH]
 ```
 
 Options:
