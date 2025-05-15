@@ -3,17 +3,9 @@ name = "bbrpy"
 version = "0.2.6"
 description = "Better Battery Report for Windows"
 readme = "README.md"
-authors = [
-    { name = "Pablo Garcia", email = "pablofueros@gmail.com" }
-]
+authors = [{ name = "Pablo Garcia", email = "pablofueros@gmail.com" }]
 requires-python = ">=3.12"
-dependencies = [
-    "pandas>=2.2.3",
-    "plotly>=5.24.1",
-    "pydantic-xml>=2.14.1",
-    "rich>=13.9.4",
-    "typer>=0.15.1",
-]
+dependencies = ["pydantic-xml>=2.14.1", "rich>=13.9.4", "typer>=0.15.1"]
 
 [build-system]
 requires = ["hatchling"]
@@ -21,6 +13,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "bbrpy[report]",
     "ipykernel>=6.29.5",
     "nbformat>=5.10.4",
     "pre-commit>=4.1.0",
@@ -31,6 +24,9 @@ dev = [
 
 [project.scripts]
 bbrpy = "bbrpy.cli:app"
+
+[project.optional-dependencies]
+report = ["pandas>=2.2.3", "plotly>=5.24.1"]
 
 [tool.pyright]
 exclude = [".venv"]
