@@ -13,7 +13,7 @@ app = typer.Typer()
 
 def version_callback(value: bool):
     if value:
-        typer.echo(f"bbrpy version {__version__}\n")
+        typer.echo(f"bbrpy {__version__}\n")
         raise typer.Exit()
 
 
