@@ -28,13 +28,32 @@ Note:
 """
 
 import pathlib
+import platform
 import subprocess
 import tempfile
 
+from .exceptions import PlatformError
+
+
+def is_windows() -> bool:
+    """Check if the current platform is Windows."""
+    return platform.system() == "Windows"
+
 
 def generate_battery_report_xml() -> str:
-    """Returns the content of the battery report XML file.
-    Note that the file is created in a temporary directory."""
+    """
+    Returns the content of the battery report XML file.
+    Note that the file is created in a temporary directory.
+
+    Raises:
+        PlatformError: If the tool is run on a non-Windows platform.
+    """
+    # Check if running on Windows
+    if not is_windows():
+        raise PlatformError(
+            "This tool is designed for Windows systems only as it relies on the 'powercfg' command.\n"
+            f"For the time being, it cannot run on your current platform: {platform.system()}"
+        )
 
     with tempfile.TemporaryDirectory() as temp_dir:
         filepath = pathlib.Path(temp_dir, "report.xml")

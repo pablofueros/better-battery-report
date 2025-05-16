@@ -5,6 +5,7 @@ import rich
 import typer
 from rich.markup import escape
 
+from .exceptions import PlatformError
 from .models import BatteryReport
 from .version import __version__
 
@@ -33,9 +34,15 @@ def main(
 @app.command()
 def info():
     """Display basic battery information from the latest report."""
-    report = BatteryReport.generate()
-    rich.print(f":alarm_clock: Scan Time: [green]{report.scan_time}[/green]")
-    rich.print(f":battery: Capacity Status: {report.full_cap}/{report.design_cap} mWh")
+    try:
+        report = BatteryReport.generate()
+        rich.print(f":alarm_clock: Scan Time: [green]{report.scan_time}[/green]")
+        rich.print(
+            f":battery: Capacity Status: {report.full_cap}/{report.design_cap} mWh"
+        )
+    except PlatformError as e:
+        rich.print(f":warning:  [bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
 
 
 @app.command()
@@ -50,36 +57,41 @@ def report(
         import plotly.express as px
     except ImportError:
         rich.print(
-            ":warning: [red] Error: Missing extra dependencies![/red]\n"
+            ":warning:  [bold red]Error: [/bold red] Missing extra dependencies!\n"
             f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
         )
         raise typer.Exit(1)
 
-    # Generate the battery report and extract the capacity history
-    report = BatteryReport.generate()
-    history_df = pd.DataFrame([entry.model_dump() for entry in report.History])
+    try:
+        # Generate the battery report and extract the capacity history
+        report = BatteryReport.generate()
+        history_df = pd.DataFrame([entry.model_dump() for entry in report.History])
 
-    # Generate the capacity history visualization
-    fig = px.line(
-        history_df,
-        x="StartDate",
-        y=["DesignCapacity", "FullChargeCapacity"],
-        labels={"value": "Capacity (mWh)", "variable": "Type"},
-        title="Battery Capacity Over Time",
-        template="plotly_dark",
-    )
+        # Generate the capacity history visualization
+        fig = px.line(
+            history_df,
+            x="StartDate",
+            y=["DesignCapacity", "FullChargeCapacity"],
+            labels={"value": "Capacity (mWh)", "variable": "Type"},
+            title="Battery Capacity Over Time",
+            template="plotly_dark",
+        )
 
-    # Create the output directory if it does not exist
-    output_path = pathlib.Path(output).resolve()
-    directory = output_path.parent
-    directory.mkdir(parents=True, exist_ok=True)
+        # Create the output directory if it does not exist
+        output_path = pathlib.Path(output).resolve()
+        directory = output_path.parent
+        directory.mkdir(parents=True, exist_ok=True)
 
-    # Save the report to an HTML file
-    fig.write_html(output_path.with_suffix(".html"))
-    rich.print(f"Report generated successfully in [blue]{directory}[/blue]")
+        # Save the report to an HTML file
+        fig.write_html(output_path.with_suffix(".html"))
+        rich.print(f"Report generated successfully in [blue]{directory}[/blue]")
 
-    # Open the report in the default browser
-    webbrowser.open(f"file://{output_path}")
+        # Open the report in the default browser
+        webbrowser.open(f"file://{output_path}")
+
+    except PlatformError as e:
+        rich.print(f":warning:  [bold red]Error:[/bold red] {e}")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
