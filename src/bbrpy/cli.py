@@ -24,7 +24,7 @@ def _get_battery_report() -> BatteryReport:
 def _display_version(value: bool) -> None:
     """Display the version of the application and exit."""
     if value:
-        typer.echo(f"bbrpy {__version__}\n")
+        typer.echo(f"bbrpy {__version__}")
         raise typer.Exit()
 
 
