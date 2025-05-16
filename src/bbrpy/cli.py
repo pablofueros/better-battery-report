@@ -12,7 +12,17 @@ from .version import __version__
 app = typer.Typer()
 
 
-def version_callback(value: bool):
+def _get_battery_report() -> BatteryReport:
+    """Generates the battery report and handles PlatformError."""
+    try:
+        return BatteryReport.generate()
+    except PlatformError as e:
+        rich.print(f":warning:  [bold red]Error:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+def _display_version(value: bool) -> None:
+    """Display the version of the application and exit."""
     if value:
         typer.echo(f"bbrpy version {__version__}\n")
         raise typer.Exit()
@@ -20,42 +30,35 @@ def version_callback(value: bool):
 
 @app.callback()
 def main(
+    ctx: typer.Context,
     version: bool = typer.Option(
         None,
         "--version",
         "-v",
-        callback=version_callback,
+        callback=_display_version,
         help="Display the version and exit.",
+        is_eager=True,  # Process version before other logic
     ),
 ):
-    pass
+    """Handle version and ensure battery report is available."""
+    # Generate and store the report object in the context
+    ctx.obj = _get_battery_report()
 
 
 @app.command()
-def info():
+def info(ctx: typer.Context):
     """Display basic battery information from the latest report."""
-
-    try:
-        report = BatteryReport.generate()
-    except PlatformError as e:
-        rich.print(f":warning:  [bold red]Error:[/bold red] {e}")
-        raise typer.Exit(1)
-
+    report: BatteryReport = ctx.obj  # Get the report from the context
     rich.print(f":alarm_clock: Scan Time: [green]{report.scan_time}[/green]")
     rich.print(f":battery: Capacity Status: {report.full_cap}/{report.design_cap} mWh")
 
 
 @app.command()
 def report(
+    ctx: typer.Context,
     output: str = "./reports/battery_report.html",
 ):
     """Generate a battery report with capacity history visualization."""
-
-    try:
-        report = BatteryReport.generate()
-    except PlatformError as e:
-        rich.print(f":warning:  [bold red]Error:[/bold red] {e}")
-        raise typer.Exit(1)
 
     try:
         import pandas as pd
@@ -68,6 +71,7 @@ def report(
         raise typer.Exit(1)
 
     # Generate the battery report and extract the capacity history
+    report: BatteryReport = ctx.obj  # Get the report from the context
     history_df = pd.DataFrame([entry.model_dump() for entry in report.History])
 
     # Generate the capacity history visualization
