@@ -31,22 +31,24 @@ import pathlib
 import platform
 import subprocess
 import tempfile
+from enum import Enum
 
 from .exceptions import PlatformError
+from .utils import is_platform_windows
 
 
-def is_platform_windows() -> bool:
-    """Check if the current platform is Windows."""
-    return platform.system() == "Windows"
+class ReportFormat(Enum):
+    HTML = "html"
+    XML = "xml"
 
 
-def _generate_battery_report(as_xml: bool = False) -> str:
+def _generate_battery_report(format: ReportFormat = ReportFormat.HTML) -> str:
     """
     Generate a battery report using the powercfg command.
 
     Args:
-        as_xml (bool): If True, generate the report in XML format.
-            Otherwise, generate in HTML format (default: False).
+        format (ReportFormat): The format of the report, either ReportFormat.HTML or ReportFormat.XML.
+            (default: ReportFormat.HTML).
     Returns:
         str: The content of the generated battery report file.
     Raises:
@@ -62,9 +64,10 @@ def _generate_battery_report(as_xml: bool = False) -> str:
 
     with tempfile.TemporaryDirectory() as temp_dir:
         base = pathlib.Path(temp_dir) / "report"
-        filepath = base.with_suffix(".xml" if as_xml else ".html")
+        is_xml = format == ReportFormat.XML
+        filepath = base.with_suffix(f".{format.value}")
         cmd = ["powercfg", "/batteryreport", "/output", str(filepath)]
-        if as_xml:
+        if is_xml:
             cmd.append("/xml")
         subprocess.run(cmd, stdout=subprocess.DEVNULL, check=True)
         return filepath.read_text("utf-8")
@@ -79,7 +82,7 @@ def generate_battery_report_xml() -> str:
     Raises:
         PlatformError: If the tool is run on a non-Windows platform.
     """
-    return _generate_battery_report(as_xml=True)
+    return _generate_battery_report(format=ReportFormat.XML)
 
 
 def generate_battery_report_html() -> str:
@@ -91,4 +94,4 @@ def generate_battery_report_html() -> str:
     Raises:
         PlatformError: If the tool is run on a non-Windows platform.
     """
-    return _generate_battery_report()
+    return _generate_battery_report(format=ReportFormat.HTML)
