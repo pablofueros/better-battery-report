@@ -35,28 +35,60 @@ import tempfile
 from .exceptions import PlatformError
 
 
-def is_windows() -> bool:
+def is_platform_windows() -> bool:
     """Check if the current platform is Windows."""
     return platform.system() == "Windows"
 
 
-def generate_battery_report_xml() -> str:
+def _generate_battery_report(as_xml: bool = False) -> str:
     """
-    Returns the content of the battery report XML file.
-    Note that the file is created in a temporary directory.
+    Generate a battery report using the powercfg command.
 
+    Args:
+        as_xml (bool): If True, generate the report in XML format.
+            Otherwise, generate in HTML format (default: False).
+    Returns:
+        str: The content of the generated battery report file.
     Raises:
         PlatformError: If the tool is run on a non-Windows platform.
     """
+
     # Check if running on Windows
-    if not is_windows():
+    if not is_platform_windows():
         raise PlatformError(
             "This tool is designed for Windows systems only as it relies on the 'powercfg' command.\n"
             f"For the time being, it cannot run on your current platform: {platform.system()}"
         )
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        filepath = pathlib.Path(temp_dir, "report.xml")
-        cmd = f"powercfg /batteryreport /output {filepath} /xml"
-        subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL)
+        base = pathlib.Path(temp_dir) / "report"
+        filepath = base.with_suffix(".xml" if as_xml else ".html")
+        cmd = ["powercfg", "/batteryreport", "/output", str(filepath)]
+        if as_xml:
+            cmd.append("/xml")
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, check=True)
         return filepath.read_text("utf-8")
+
+
+def generate_battery_report_xml() -> str:
+    """
+    Returns the content of the battery report XML file.
+
+    Returns:
+        str: The content of the generated battery report XML file.
+    Raises:
+        PlatformError: If the tool is run on a non-Windows platform.
+    """
+    return _generate_battery_report(as_xml=True)
+
+
+def generate_battery_report_html() -> str:
+    """
+    Returns the content of the battery report HTML file.
+
+    Returns:
+        str: The content of the generated battery report HTML file.
+    Raises:
+        PlatformError: If the tool is run on a non-Windows platform.
+    """
+    return _generate_battery_report()

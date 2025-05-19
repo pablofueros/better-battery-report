@@ -6,6 +6,7 @@ import typer
 from rich.markup import escape
 
 from .exceptions import PlatformError
+from .generator import generate_battery_report_html, generate_battery_report_xml
 from .models import BatteryReport
 from .version import __version__
 
@@ -95,6 +96,45 @@ def report(
 
     # Open the report in the default browser
     webbrowser.open(f"file://{output_path}")
+
+
+@app.command()
+def default_report(
+    mode: str = typer.Option(
+        "html",
+        "--mode",
+        "-m",
+    ),
+    output: str = "./reports/default_report",
+):
+    """Generate a battery report and save it as default html or xml."""
+
+    # Generate raw report content directly via powercfg
+    if mode == "html":
+        content = generate_battery_report_html()
+    if mode == "xml":
+        content = generate_battery_report_xml()
+    else:
+        rich.print(
+            ":warning:  [bold red]Error:[/bold red] Invalid mode. Use 'html' or 'xml'."
+        )
+        raise typer.Exit(1)
+
+    # Write to output path
+    output_path = (
+        pathlib.Path(output)
+        .resolve()
+        .with_suffix(".html" if mode == "html" else ".xml")
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(content, encoding="utf-8")
+    rich.print(
+        f"Report saved as [green]{mode.upper()}[/green] at [blue]{output_path}[/blue]"
+    )
+
+    # Open HTML in browser
+    if mode == "html":
+        webbrowser.open(f"file://{output_path}")
 
 
 if __name__ == "__main__":
