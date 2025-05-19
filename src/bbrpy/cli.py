@@ -31,7 +31,6 @@ def _display_version(value: bool) -> None:
 
 @app.callback()
 def main(
-    ctx: typer.Context,
     version: bool = typer.Option(
         None,
         "--version",
@@ -41,100 +40,87 @@ def main(
         is_eager=True,  # Process version before other logic
     ),
 ):
-    """Handle version and ensure battery report is available."""
-    # Generate and store the report object in the context
-    ctx.obj = _get_battery_report()
+    pass
 
 
 @app.command()
-def info(ctx: typer.Context):
+def info():
     """Display basic battery information from the latest report."""
-    report: BatteryReport = ctx.obj  # Get the report from the context
+    report: BatteryReport = _get_battery_report()
     rich.print(f":alarm_clock: Scan Time: [green]{report.scan_time}[/green]")
     rich.print(f":battery: Capacity Status: {report.full_cap}/{report.design_cap} mWh")
 
 
 @app.command()
 def report(
-    ctx: typer.Context,
-    output: str = "./reports/battery_report.html",
-):
-    """Generate a battery report with capacity history visualization."""
-
-    try:
-        import pandas as pd
-        import plotly.express as px
-    except ImportError:
-        rich.print(
-            ":warning:  [bold red]Error: [/bold red] Missing extra dependencies!\n"
-            f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
-        )
-        raise typer.Exit(1)
-
-    # Generate the battery report and extract the capacity history
-    report: BatteryReport = ctx.obj  # Get the report from the context
-    history_df = pd.DataFrame([entry.model_dump() for entry in report.History])
-
-    # Generate the capacity history visualization
-    fig = px.line(
-        history_df,
-        x="StartDate",
-        y=["DesignCapacity", "FullChargeCapacity"],
-        labels={"value": "Capacity (mWh)", "variable": "Type"},
-        title="Battery Capacity Over Time",
-        template="plotly_dark",
-    )
-
-    # Create the output directory if it does not exist
-    output_path = pathlib.Path(output).resolve()
-    directory = output_path.parent
-    directory.mkdir(parents=True, exist_ok=True)
-
-    # Save the report to an HTML file
-    fig.write_html(output_path.with_suffix(".html"))
-    rich.print(f"Report generated successfully in [blue]{directory}[/blue]")
-
-    # Open the report in the default browser
-    webbrowser.open(f"file://{output_path}")
-
-
-@app.command()
-def default_report(
-    mode: str = typer.Option(
-        "html",
-        "--mode",
-        "-m",
+    output: str = typer.Option(
+        "./reports/battery_report",
+        "--output",
+        "-o",
+        help="Output directory for the report",
     ),
-    output: str = "./reports/default_report",
+    format: str = typer.Option(
+        "better",
+        "--format",
+        "-f",
+        help="Report format: 'better' (custom html), 'default' (Windows html), or 'raw' (xml data)",
+    ),
 ):
-    """Generate a battery report and save it as default html or xml."""
+    """Generate a battery report in various formats."""
 
-    # Generate raw report content directly via powercfg
-    if mode == "html":
-        content = generate_battery_report_html()
-    if mode == "xml":
-        content = generate_battery_report_xml()
+    # Create the output directory if it doesn't exist
+    output_path = pathlib.Path(output).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if format == "better":
+        # Generate interactive plotly visualization
+        try:
+            import pandas as pd
+            import plotly.express as px
+        except ImportError:
+            rich.print(
+                ":warning:  [bold red]Error: [/bold red] Missing extra dependencies!\n"
+                f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
+            )
+            raise typer.Exit(1)
+
+        report_obj: BatteryReport = _get_battery_report()
+        history_df = pd.DataFrame([entry.model_dump() for entry in report_obj.History])
+
+        # Generate the capacity history visualization
+        fig = px.line(
+            history_df,
+            x="StartDate",
+            y=["DesignCapacity", "FullChargeCapacity"],
+            labels={"value": "Capacity (mWh)", "variable": "Type"},
+            title="Battery Capacity Over Time",
+            template="plotly_dark",
+        )  # Save the interactive report to an HTML file
+        final_path = output_path.with_suffix(".html")
+        fig.write_html(final_path)
+        rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
+
+    elif format in ["default", "raw"]:
+        # Determine final path with appropriate extension
+        final_path = output_path.with_suffix(f".{format}")
+
+        # Generate the report directly to the specified path
+        if format == "default":
+            generate_battery_report_html(output_path=final_path)
+        else:
+            generate_battery_report_xml(output_path=final_path)
+
+        rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
+
     else:
         rich.print(
-            ":warning:  [bold red]Error:[/bold red] Invalid mode. Use 'html' or 'xml'."
+            ":warning:  [bold red]Error:[/bold red] Invalid format. Use 'better', 'default', or 'raw'."
         )
         raise typer.Exit(1)
 
-    # Write to output path
-    output_path = (
-        pathlib.Path(output)
-        .resolve()
-        .with_suffix(".html" if mode == "html" else ".xml")
-    )
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(content, encoding="utf-8")
-    rich.print(
-        f"Report saved as [green]{mode.upper()}[/green] at [blue]{output_path}[/blue]"
-    )
-
-    # Open HTML in browser
-    if mode == "html":
-        webbrowser.open(f"file://{output_path}")
+    # Open HTML reports in browser (for interactive and html formats)
+    if format in ["interactive", "html"]:
+        webbrowser.open(f"file://{final_path}")
 
 
 if __name__ == "__main__":
