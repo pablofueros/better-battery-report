@@ -26,6 +26,7 @@ dev = [
     "pyright>=1.1.392.post0",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
+    "tox>=4.26.0",
 ]
 
 [project.scripts]
