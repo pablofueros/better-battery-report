@@ -1,5 +1,6 @@
 import pathlib
 import webbrowser
+from enum import Enum
 
 import rich
 import typer
@@ -11,6 +12,21 @@ from .models import BatteryReport
 from .version import __version__
 
 app = typer.Typer()
+
+
+class ReportFormat(str, Enum):
+    BETTER = "better"
+    DEFAULT = "default"
+    RAW = "raw"
+
+    @property
+    def extension(self) -> str:
+        """Return the appropriate file extension for the report format."""
+        if self in [ReportFormat.BETTER, ReportFormat.DEFAULT]:
+            return ".html"
+        elif self == ReportFormat.RAW:
+            return ".xml"
+        return ""
 
 
 def _get_battery_report() -> BatteryReport:
@@ -27,6 +43,66 @@ def _display_version(value: bool) -> None:
     if value:
         typer.echo(f"bbrpy {__version__}")
         raise typer.Exit()
+
+
+def _validate_report_format(format_str: str) -> ReportFormat:
+    """Validate the report format and return it if valid."""
+    try:
+        return ReportFormat(format_str.lower())
+    except ValueError:
+        valid_formats = [f.value for f in ReportFormat]
+        rich.print(
+            f":warning:  [bold red]Error:[/bold red] Invalid format '{format_str}'. "
+            f"Use {', '.join([f'[yellow]{f}[/yellow]' for f in valid_formats])}"
+        )
+        raise typer.Exit(1)
+
+
+def _generate_better_report(
+    output_path: pathlib.Path, report_obj: BatteryReport
+) -> pathlib.Path:
+    """Generate the 'better' interactive HTML report with Plotly."""
+    try:
+        import pandas as pd
+        import plotly.express as px
+    except ImportError:
+        rich.print(
+            ":warning:  [bold red]Error: [/bold red] Missing extra dependencies!\n"
+            f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
+        )
+        raise typer.Exit(1)
+
+    # Prepare the data frame from the report history
+    history_df = pd.DataFrame([entry.model_dump() for entry in report_obj.History])
+
+    # Generate the capacity history visualization
+    fig = px.line(
+        history_df,
+        x="StartDate",
+        y=["DesignCapacity", "FullChargeCapacity"],
+        labels={"value": "Capacity (mWh)", "variable": "Type"},
+        title="Battery Capacity Over Time",
+        template="plotly_dark",
+    )
+
+    # Save the interactive report to an HTML file
+    final_path = output_path.with_suffix(ReportFormat.BETTER.extension)
+    fig.write_html(final_path)
+    return final_path
+
+
+def _generate_default_report(output_path: pathlib.Path) -> pathlib.Path:
+    """Generate the default Windows HTML battery report."""
+    final_path = output_path.with_suffix(ReportFormat.DEFAULT.extension)
+    generate_battery_report_html(output_path=final_path)
+    return final_path
+
+
+def _generate_raw_report(output_path: pathlib.Path) -> pathlib.Path:
+    """Generate the raw XML battery report data."""
+    final_path = output_path.with_suffix(ReportFormat.RAW.extension)
+    generate_battery_report_xml(output_path=final_path)
+    return final_path
 
 
 @app.callback()
@@ -68,58 +144,27 @@ def report(
 ):
     """Generate a battery report in various formats."""
 
+    # Validate the report format
+    format_enum = _validate_report_format(format)
+
     # Create the output directory if it doesn't exist
     output_path = pathlib.Path(output).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if format == "better":
-        # Generate interactive plotly visualization
-        try:
-            import pandas as pd
-            import plotly.express as px
-        except ImportError:
-            rich.print(
-                ":warning:  [bold red]Error: [/bold red] Missing extra dependencies!\n"
-                f"Use [yellow]{escape('bbrpy[report]')}[/yellow] to run this command"
-            )
-            raise typer.Exit(1)
+    # Generate the appropriate report based on the format
+    if format_enum == ReportFormat.BETTER:
+        report_obj = _get_battery_report()
+        final_path = _generate_better_report(output_path, report_obj)
+    elif format_enum == ReportFormat.DEFAULT:
+        final_path = _generate_default_report(output_path)
+    else:  # RAW format
+        final_path = _generate_raw_report(output_path)
 
-        report_obj: BatteryReport = _get_battery_report()
-        history_df = pd.DataFrame([entry.model_dump() for entry in report_obj.History])
+    # Print success message
+    rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
 
-        # Generate the capacity history visualization
-        fig = px.line(
-            history_df,
-            x="StartDate",
-            y=["DesignCapacity", "FullChargeCapacity"],
-            labels={"value": "Capacity (mWh)", "variable": "Type"},
-            title="Battery Capacity Over Time",
-            template="plotly_dark",
-        )  # Save the interactive report to an HTML file
-        final_path = output_path.with_suffix(".html")
-        fig.write_html(final_path)
-        rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
-
-    elif format in ["default", "raw"]:
-        # Determine final path with appropriate extension
-        final_path = output_path.with_suffix(f".{format}")
-
-        # Generate the report directly to the specified path
-        if format == "default":
-            generate_battery_report_html(output_path=final_path)
-        else:
-            generate_battery_report_xml(output_path=final_path)
-
-        rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
-
-    else:
-        rich.print(
-            ":warning:  [bold red]Error:[/bold red] Invalid format. Use 'better', 'default', or 'raw'."
-        )
-        raise typer.Exit(1)
-
-    # Open HTML reports in browser (for interactive and html formats)
-    if format in ["interactive", "html"]:
+    # Open HTML reports in browser (for better and default formats)
+    if format_enum in [ReportFormat.BETTER, ReportFormat.DEFAULT]:
         webbrowser.open(f"file://{final_path}")
 
 
