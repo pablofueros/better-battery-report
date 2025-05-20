@@ -1,6 +1,7 @@
 import pathlib
 import webbrowser
 from enum import Enum
+from typing import Protocol
 
 import rich
 import typer
@@ -27,6 +28,23 @@ class ReportFormat(str, Enum):
         elif self == ReportFormat.RAW:
             return ".xml"
         return ""
+
+    @property
+    def needs_report_obj(self) -> bool:
+        """Return whether this format requires the BatteryReport object."""
+        return self == ReportFormat.BETTER
+
+    @property
+    def browser_viewable(self) -> bool:
+        """Return whether this format can be viewed in a browser."""
+        return self in [ReportFormat.BETTER, ReportFormat.DEFAULT]
+
+
+# Protocol for report handlers (both with and without BatteryReport)
+class ReportHandlerProtocol(Protocol):
+    """Protocol for report generation functions."""
+
+    def __call__(self, output_path: pathlib.Path, *args, **kwargs) -> pathlib.Path: ...
 
 
 def _get_battery_report() -> BatteryReport:
@@ -105,6 +123,14 @@ def _generate_raw_report(output_path: pathlib.Path) -> pathlib.Path:
     return final_path
 
 
+# Registry mapping format enum values to their generator functions
+FORMAT_HANDLERS: dict[ReportFormat, ReportHandlerProtocol] = {
+    ReportFormat.BETTER: _generate_better_report,
+    ReportFormat.DEFAULT: _generate_default_report,
+    ReportFormat.RAW: _generate_raw_report,
+}
+
+
 @app.callback()
 def main(
     version: bool = typer.Option(
@@ -151,20 +177,22 @@ def report(
     output_path = pathlib.Path(output).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Generate the appropriate report based on the format
-    if format_enum == ReportFormat.BETTER:
+    # Get the appropriate handler from our registry
+    handler = FORMAT_HANDLERS[format_enum]
+
+    # Generate the report
+    if format_enum.needs_report_obj:
+        # Only fetch the report object when needed
         report_obj = _get_battery_report()
-        final_path = _generate_better_report(output_path, report_obj)
-    elif format_enum == ReportFormat.DEFAULT:
-        final_path = _generate_default_report(output_path)
-    else:  # RAW format
-        final_path = _generate_raw_report(output_path)
+        final_path = handler(output_path, report_obj)
+    else:
+        final_path = handler(output_path)
 
     # Print success message
     rich.print(f"Report generated successfully at [blue]{final_path}[/blue]")
 
-    # Open HTML reports in browser (for better and default formats)
-    if format_enum in [ReportFormat.BETTER, ReportFormat.DEFAULT]:
+    # Open HTML reports in browser if applicable
+    if format_enum.browser_viewable:
         webbrowser.open(f"file://{final_path}")
 
 
