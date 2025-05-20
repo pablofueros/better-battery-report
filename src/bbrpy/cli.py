@@ -1,6 +1,5 @@
 import pathlib
 import webbrowser
-from enum import Enum
 from typing import Protocol
 
 import rich
@@ -8,36 +7,12 @@ import typer
 from rich.markup import escape
 
 from .exceptions import PlatformError
+from .formats import ReportFormat
 from .generator import generate_battery_report_html, generate_battery_report_xml
 from .models import BatteryReport
 from .version import __version__
 
 app = typer.Typer()
-
-
-class ReportFormat(str, Enum):
-    BETTER = "better"
-    DEFAULT = "default"
-    RAW = "raw"
-
-    @property
-    def extension(self) -> str:
-        """Return the appropriate file extension for the report format."""
-        if self in [ReportFormat.BETTER, ReportFormat.DEFAULT]:
-            return ".html"
-        elif self == ReportFormat.RAW:
-            return ".xml"
-        return ""
-
-    @property
-    def needs_report_obj(self) -> bool:
-        """Return whether this format requires the BatteryReport object."""
-        return self == ReportFormat.BETTER
-
-    @property
-    def browser_viewable(self) -> bool:
-        """Return whether this format can be viewed in a browser."""
-        return self in [ReportFormat.BETTER, ReportFormat.DEFAULT]
 
 
 # Protocol for report handlers (both with and without BatteryReport)
