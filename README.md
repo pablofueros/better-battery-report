@@ -65,18 +65,22 @@ This command shows basic battery information including:
 ### Generate Battery Report
 
 ```bash
-bbrpy report [--output PATH]
+bbrpy report [--output PATH] [--format FORMAT]
 ```
 
 Options:
 
-- `--output`: Specify the output path for the HTML report (default: "./reports/battery_report.html")
+- `--output`, `-o`: Specify the output path for the report (default: "./reports/battery_report")
+- `--format`, `-f`: Report format: 'custom' (interactive html), 'standard' (Windows html), or 'raw' (xml data) (default: "custom")
 
 This command:
 
 1. Generates a battery report using powercfg
-2. Creates an interactive visualization of battery capacity history
-3. Opens the report in your default web browser
+2. Creates a report in the specified format:
+   - `custom`: Interactive visualization of battery capacity history with Plotly
+   - `standard`: Default Windows HTML battery report
+   - `raw`: XML data used for parsing
+3. Opens HTML reports in your default web browser automatically
 
 ## 📘 Requirements
 
