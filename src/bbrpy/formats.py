@@ -6,20 +6,22 @@ from enum import Enum
 
 
 class ReportFormat(str, Enum):
-    """Enum for supported report formats across the application."""
-
     BETTER = "better"  # Custom interactive HTML report
     STANDARD = "standard"  # Windows standard HTML report
     RAW = "raw"  # Raw XML data
 
     @property
+    def is_html(self) -> bool:
+        """Return whether this format is HTML-based."""
+        return self in [ReportFormat.BETTER, ReportFormat.STANDARD]
+
+    @property
     def extension(self) -> str:
         """Return the appropriate file extension for the report format."""
-        if self in [ReportFormat.BETTER, ReportFormat.STANDARD]:
+        if self.is_html:
             return ".html"
-        elif self == ReportFormat.RAW:
+        else:
             return ".xml"
-        return ""
 
     @property
     def needs_report_obj(self) -> bool:
@@ -29,4 +31,4 @@ class ReportFormat(str, Enum):
     @property
     def browser_viewable(self) -> bool:
         """Return whether this format can be viewed in a browser."""
-        return self in [ReportFormat.BETTER, ReportFormat.STANDARD]
+        return self.is_html
