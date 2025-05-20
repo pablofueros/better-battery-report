@@ -9,13 +9,13 @@ class ReportFormat(str, Enum):
     """Enum for supported report formats across the application."""
 
     BETTER = "better"  # Custom interactive HTML report
-    DEFAULT = "default"  # Windows default HTML report
+    STANDARD = "standard"  # Windows standard HTML report
     RAW = "raw"  # Raw XML data
 
     @property
     def extension(self) -> str:
         """Return the appropriate file extension for the report format."""
-        if self in [ReportFormat.BETTER, ReportFormat.DEFAULT]:
+        if self in [ReportFormat.BETTER, ReportFormat.STANDARD]:
             return ".html"
         elif self == ReportFormat.RAW:
             return ".xml"
@@ -29,4 +29,4 @@ class ReportFormat(str, Enum):
     @property
     def browser_viewable(self) -> bool:
         """Return whether this format can be viewed in a browser."""
-        return self in [ReportFormat.BETTER, ReportFormat.DEFAULT]
+        return self in [ReportFormat.BETTER, ReportFormat.STANDARD]

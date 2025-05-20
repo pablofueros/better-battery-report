@@ -78,9 +78,9 @@ def _generate_better_report(
     return final_path
 
 
-def _generate_default_report(output_path: Path) -> Path:
-    """Generate the default Windows HTML battery report."""
-    final_path = output_path.with_suffix(ReportFormat.DEFAULT.extension)
+def _generate_standard_report(output_path: Path) -> Path:
+    """Generate the standard Windows HTML battery report."""
+    final_path = output_path.with_suffix(ReportFormat.STANDARD.extension)
     generate_battery_report_html(output_path=final_path)
     return final_path
 
@@ -102,7 +102,7 @@ class ReportHandlerProtocol(Protocol):
 # Registry mapping format enum values to their generator functions
 FORMAT_HANDLERS: dict[ReportFormat, ReportHandlerProtocol] = {
     ReportFormat.BETTER: _generate_better_report,
-    ReportFormat.DEFAULT: _generate_default_report,
+    ReportFormat.STANDARD: _generate_standard_report,
     ReportFormat.RAW: _generate_raw_report,
 }
 
@@ -141,7 +141,7 @@ def report(
         "better",
         "--format",
         "-f",
-        help="Report format: 'better' (custom html), 'default' (Windows html), or 'raw' (xml data)",
+        help="Report format: 'better' (custom html), 'standard' (Windows html), or 'raw' (xml data)",
     ),
 ):
     """Generate a battery report in various formats."""
