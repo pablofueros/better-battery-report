@@ -44,11 +44,11 @@ def _validate_report_format(format: str) -> ReportFormat:
         raise typer.Exit(code=1)
 
 
-def _generate_better_report(
+def _generate_custom_report(
     output_path: Path,
     report_obj: BatteryReport,
 ) -> Path:
-    """Generate the 'better' interactive HTML report with Plotly."""
+    """Generate the 'custom' interactive HTML report with Plotly."""
     try:
         import pandas as pd
         import plotly.express as px
@@ -73,7 +73,7 @@ def _generate_better_report(
     )
 
     # Save the interactive report to an HTML file
-    final_path = output_path.with_suffix(ReportFormat.BETTER.extension)
+    final_path = output_path.with_suffix(ReportFormat.CUSTOM.extension)
     fig.write_html(final_path)
     return final_path
 
@@ -101,7 +101,7 @@ class ReportHandlerProtocol(Protocol):
 
 # Registry mapping format enum values to their generator functions
 FORMAT_HANDLERS: dict[ReportFormat, ReportHandlerProtocol] = {
-    ReportFormat.BETTER: _generate_better_report,
+    ReportFormat.CUSTOM: _generate_custom_report,
     ReportFormat.STANDARD: _generate_standard_report,
     ReportFormat.RAW: _generate_raw_report,
 }
@@ -138,10 +138,10 @@ def report(
         help="Output directory for the report",
     ),
     format: str = typer.Option(
-        "better",
+        "custom",
         "--format",
         "-f",
-        help="Report format: 'better' (custom html), 'standard' (Windows html), or 'raw' (xml data)",
+        help="Report format: 'custom' (interactive html), 'standard' (Windows html), or 'raw' (xml data)",
     ),
 ):
     """Generate a battery report in various formats."""

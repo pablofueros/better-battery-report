@@ -6,14 +6,14 @@ from enum import Enum
 
 
 class ReportFormat(str, Enum):
-    BETTER = "better"  # Custom interactive HTML report
+    CUSTOM = "custom"  # Custom interactive HTML report
     STANDARD = "standard"  # Windows standard HTML report
-    RAW = "raw"  # Raw XML data
+    RAW = "raw"  # Raw XML data used for parsing
 
     @property
     def is_html(self) -> bool:
         """Return whether this format is HTML-based."""
-        return self in [ReportFormat.BETTER, ReportFormat.STANDARD]
+        return self in [ReportFormat.CUSTOM, ReportFormat.STANDARD]
 
     @property
     def extension(self) -> str:
@@ -26,7 +26,7 @@ class ReportFormat(str, Enum):
     @property
     def needs_report_obj(self) -> bool:
         """Return whether this format requires the BatteryReport object."""
-        return self == ReportFormat.BETTER
+        return self == ReportFormat.CUSTOM
 
     @property
     def browser_viewable(self) -> bool:
